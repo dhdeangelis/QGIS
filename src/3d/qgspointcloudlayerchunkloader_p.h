@@ -31,80 +31,18 @@
 #include "qgsfeature3dhandler_p.h"
 #include "qgschunkedentity_p.h"
 #include "qgspointcloud3dsymbol.h"
-
-#define SIP_NO_FILE
-
-class Qgs3DMapSettings;
-class QgsPointCloudLayer;
-class IndexedPointCloudNode;
-class QgsPointCloudIndex;
+#include "qgspointcloud3dsymbol_p.h"
+#include "qgspointcloudlayer3drenderer.h"
 
 #include <memory>
 
 #include <QFutureWatcher>
 #include <Qt3DRender/QGeometry>
 #include <Qt3DRender/QBuffer>
+#include <Qt3DRender/QMaterial>
 #include <QVector3D>
 
-
-class QgsPointCloud3DSymbolHandler // : public QgsFeature3DHandler
-{
-  public:
-    QgsPointCloud3DSymbolHandler( QgsPointCloud3DSymbol *symbol );
-
-    bool prepare( const Qgs3DRenderContext &context );// override;
-    void processNode( QgsPointCloudIndex *pc, const IndexedPointCloudNode &n, const Qgs3DRenderContext &context ); // override;
-    void finalize( Qt3DCore::QEntity *parent, const Qgs3DRenderContext &context );// override;
-
-    float zMinimum() const { return mZMin; }
-    float zMaximum() const { return mZMax; }
-
-    //! temporary data we will pass to the tessellator
-    struct PointData
-    {
-      QVector<QVector3D> positions;  // contains triplets of float x,y,z for each point
-      QVector<char> classes;
-    };
-
-  protected:
-    float mZMin = std::numeric_limits<float>::max();
-    float mZMax = std::numeric_limits<float>::lowest();
-
-  private:
-
-    //static void addSceneEntities( const Qgs3DMapSettings &map, const QVector<QVector3D> &positions, const QgsPoint3DSymbol *symbol, Qt3DCore::QEntity *parent );
-    //static void addMeshEntities( const Qgs3DMapSettings &map, const QVector<QVector3D> &positions, const QgsPoint3DSymbol *symbol, Qt3DCore::QEntity *parent, bool are_selected );
-    //static Qt3DCore::QTransform *transform( QVector3D position, const QgsPoint3DSymbol *symbol );
-
-
-
-    void makeEntity( Qt3DCore::QEntity *parent, const Qgs3DRenderContext &context, PointData &out, bool selected );
-
-    // input specific for this class
-    //std::unique_ptr< QgsPoint3DSymbol > mSymbol;
-    // inputs - generic
-    //QgsFeatureIds mSelectedIds;
-
-    // outputs
-    PointData outNormal;  //!< Features that are not selected
-    // PointData outSelected;  //!< Features that are selected
-
-    std::unique_ptr<QgsPointCloud3DSymbol> mSymbol;
-};
-
-class QgsPointCloud3DGeometry: public Qt3DRender::QGeometry
-{
-  public:
-    QgsPointCloud3DGeometry( Qt3DCore::QNode *parent, const QgsPointCloud3DSymbolHandler::PointData &data );
-
-  private:
-    void makeVertexBuffer( const QgsPointCloud3DSymbolHandler::PointData &data );
-
-    Qt3DRender::QAttribute *mPositionAttribute = nullptr;
-    Qt3DRender::QAttribute *mClassAttribute = nullptr;
-    Qt3DRender::QBuffer *mVertexBuffer = nullptr;
-    int mVertexCount = 0;
-};
+#define SIP_NO_FILE
 
 /**
  * \ingroup 3d
@@ -126,7 +64,6 @@ class QgsPointCloudLayerChunkLoaderFactory : public QgsChunkLoaderFactory
     virtual QgsChunkLoader *createChunkLoader( QgsChunkNode *node ) const override;
     virtual QgsChunkNode *createRootNode() const override;
     virtual QVector<QgsChunkNode *> createChildren( QgsChunkNode *node ) const override;
-
     const Qgs3DMapSettings &mMap;
     QgsPointCloudIndex *mPointCloudIndex;
     std::unique_ptr< QgsPointCloud3DSymbol > mSymbol;
@@ -158,7 +95,7 @@ class QgsPointCloudLayerChunkLoader : public QgsChunkLoader
   private:
     const QgsPointCloudLayerChunkLoaderFactory *mFactory;
     std::unique_ptr<QgsPointCloud3DSymbolHandler> mHandler;
-    Qgs3DRenderContext mContext;
+    QgsPointCloud3DRenderContext mContext;
     bool mCanceled = false;
     QFutureWatcher<void> *mFutureWatcher = nullptr;
 };

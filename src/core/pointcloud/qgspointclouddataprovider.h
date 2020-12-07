@@ -101,6 +101,14 @@ class CORE_EXPORT QgsPointCloudDataProvider: public QgsDataProvider
     virtual QgsGeometry polygonBounds() const;
 
     /**
+     * Returns a representation of the original metadata included in a point cloud dataset.
+     *
+     * This is a free-form dictionary of values, the contents and structure of which will vary by provider and
+     * dataset.
+     */
+    virtual QVariantMap originalMetadata() const;
+
+    /**
      * Creates a new 2D point cloud renderer, using provider backend specific information.
      *
      * The \a configuration map can be used to pass provider-specific configuration maps to the provider to
@@ -226,6 +234,21 @@ class CORE_EXPORT QgsPointCloudDataProvider: public QgsDataProvider
      * \see lasClassificationCodes()
      */
     static QMap< int, QString > translatedLasClassificationCodes();
+
+
+    /**
+     * Returns the map of LAS data format ID to untranslated string value.
+     *
+     * \see translatedDataFormatIds()
+     */
+    static QMap< int, QString > dataFormatIds();
+
+    /**
+     * Returns the map of LAS data format ID to translated string value.
+     *
+     * \see dataFormatIds()
+     */
+    static QMap< int, QString > translatedDataFormatIds();
 
 };
 

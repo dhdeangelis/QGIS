@@ -20,10 +20,14 @@
 #include "qgspointcloudrgbrenderer.h"
 #include "qgspointcloudclassifiedrenderer.h"
 #include "qgspointcloudlayer.h"
+#include "qgspointcloudextentrenderer.h"
 
 QgsPointCloudRendererRegistry::QgsPointCloudRendererRegistry()
 {
   // add default renderers
+  addRenderer( new QgsPointCloudRendererMetadata( QStringLiteral( "extent" ),
+               QObject::tr( "Extent Only" ),
+               QgsPointCloudExtentRenderer::create ) );
   addRenderer( new QgsPointCloudRendererMetadata( QStringLiteral( "ramp" ),
                QObject::tr( "Attribute by Ramp" ),
                QgsPointCloudAttributeByRampRenderer::create ) );
@@ -83,6 +87,12 @@ QgsPointCloudRenderer *QgsPointCloudRendererRegistry::defaultRenderer( const Qgs
   if ( !provider )
     return new QgsPointCloudAttributeByRampRenderer();
 
+  if ( provider->name() == QLatin1String( "pdal" ) )
+  {
+    // for now, default to extent renderer only for las/laz files
+    return new QgsPointCloudExtentRenderer();
+  }
+
   const QgsPointCloudAttributeCollection attributes = provider->attributes();
 
   //if red/green/blue attributes are present, then default to a RGB renderer
@@ -99,7 +109,7 @@ QgsPointCloudRenderer *QgsPointCloudRendererRegistry::defaultRenderer( const Qgs
       const int maxValue = std::max( blueMax.toInt(), std::max( redMax.toInt(), greenMax.toInt() ) );
       // try and guess suitable range from input max values -- we don't just take the provider max value directly here, but rather see if it's
       // likely to be 8 bit or 16 bit color values
-      const int rangeGuess = maxValue > 255 ? 65024 : 255;
+      const int rangeGuess = maxValue > 255 ? 65535 : 255;
 
       if ( rangeGuess > 255 )
       {

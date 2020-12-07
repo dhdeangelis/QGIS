@@ -422,6 +422,86 @@ QString QgsPointCloudLayer::htmlMetadata() const
                 + ( pointCount < 0 ? tr( "unknown" ) : locale.toString( static_cast<qlonglong>( pointCount ) ) )
                 + QStringLiteral( "</td></tr>\n" );
 
+  const QVariantMap originalMetadata = mDataProvider ? mDataProvider->originalMetadata() : QVariantMap();
+
+  if ( originalMetadata.value( QStringLiteral( "creation_year" ) ).toInt() > 0 && originalMetadata.contains( QStringLiteral( "creation_doy" ) ) )
+  {
+    QDate creationDate( originalMetadata.value( QStringLiteral( "creation_year" ) ).toInt(), 1, 1 );
+    creationDate = creationDate.addDays( originalMetadata.value( QStringLiteral( "creation_doy" ) ).toInt() );
+
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "Creation date" ) + QStringLiteral( "</td><td>" )
+                  + creationDate.toString( Qt::ISODate )
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+  if ( originalMetadata.contains( QStringLiteral( "major_version" ) ) && originalMetadata.contains( QStringLiteral( "minor_version" ) ) )
+  {
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "Version" ) + QStringLiteral( "</td><td>" )
+                  + QStringLiteral( "%1.%2" ).arg( originalMetadata.value( QStringLiteral( "major_version" ) ).toString(),
+                      originalMetadata.value( QStringLiteral( "minor_version" ) ).toString() )
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+
+  if ( !originalMetadata.value( QStringLiteral( "dataformat_id" ) ).toString().isEmpty() )
+  {
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "Data format" ) + QStringLiteral( "</td><td>" )
+                  + QStringLiteral( "%1 (%2)" ).arg( QgsPointCloudDataProvider::translatedDataFormatIds().value( originalMetadata.value( QStringLiteral( "dataformat_id" ) ).toInt() ),
+                      originalMetadata.value( QStringLiteral( "dataformat_id" ) ).toString() ).trimmed()
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Scale X" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "scale_x" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Scale Y" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "scale_y" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Scale Z" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "scale_z" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Offset X" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "offset_x" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Offset Y" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "offset_y" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+  myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                + tr( "Offset Z" ) + QStringLiteral( "</td><td>" )
+                + QString::number( originalMetadata.value( QStringLiteral( "offset_z" ) ).toDouble() )
+                + QStringLiteral( "</td></tr>\n" );
+
+  if ( !originalMetadata.value( QStringLiteral( "project_id" ) ).toString().isEmpty() )
+  {
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "Project ID" ) + QStringLiteral( "</td><td>" )
+                  + originalMetadata.value( QStringLiteral( "project_id" ) ).toString()
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+
+  if ( !originalMetadata.value( QStringLiteral( "system_id" ) ).toString().isEmpty() )
+  {
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "System ID" ) + QStringLiteral( "</td><td>" )
+                  + originalMetadata.value( QStringLiteral( "system_id" ) ).toString()
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+
+  if ( !originalMetadata.value( QStringLiteral( "software_id" ) ).toString().isEmpty() )
+  {
+    myMetadata += QStringLiteral( "<tr><td class=\"highlight\">" )
+                  + tr( "Software ID" ) + QStringLiteral( "</td><td>" )
+                  + originalMetadata.value( QStringLiteral( "software_id" ) ).toString()
+                  + QStringLiteral( "</td></tr>\n" );
+  }
+
   // End Provider section
   myMetadata += QLatin1String( "</table>\n<br><br>" );
 
